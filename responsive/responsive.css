@@ -1,0 +1,36 @@
+
+@media screen and (min-width: 1px) {
+	.homer {
+		width: 313px;
+		height: 313px;
+		background: url(homer.jpg) 312px 312px;
+	}
+}
+
+@media screen and (min-width: 400px) {
+	.homer {
+		width: 313px;
+		height: 313px;
+		background: url(homer.jpg) 0px 312px;
+	}
+}
+
+@media screen and (min-width: 800px) {
+	.homer {
+		width: 313px;
+		height: 313px;
+		background: url(homer.jpg) 312px 0px;
+	}
+}
+
+@media screen and (min-width: 1200px) {
+	.homer {
+		width: 313px;
+		height: 313px;
+		background: url(homer.jpg) 0px 0px;
+	}
+}
+
+
+
+
