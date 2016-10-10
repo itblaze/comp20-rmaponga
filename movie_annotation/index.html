@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Classic Movie</title>
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+
+<body>
+
+<h1 id="title">Classic Movie</h1>
+
+<video src="https://www.cs.tufts.edu/comp/20/classic.mp4" id="classic_video" controls></video>
+<div id="movie_quotes"></div>
+
+<script type="text/javascript">
+	// Complete this section and create a CSS file named style.css
+	video = document.getElementById('classic_video');
+	annotations = ["Igor: DR. FRANKENSTEIN?!?!?",
+						"Dr. Frederick Frankenstein: Frokensteen.",
+						"Igor: You're putting me on.",
+						"Dr. Frederick Frankenstein: No, it pronounced, \"Frokensteen\".",
+						"Igor: Do you also say Froaderick?",
+						"Dr. Frederick Frankenstein: No . . . \"Frederick.\"",
+						"Igor: Well, why isn't it 'Froaderick Frokensteen'?",
+						"Dr. Frederick Frankenstein: It isn't, it's \"Frederick Frokensteen\"",
+						"Igor: I see.",
+						"Dr. Frederick Frankenstein: You must be Igor. [He pronounces it ee-gor.]",
+						"Igor: No, it's pronounced \"eye-gor.\"",
+						"Dr. Frederick Frankenstein: But they told me it was \"ee-gor\"...",
+						"Igor: Well, they were wrong then, weren't they?",
+						"Dr. Frederick Frankenstein: Uh, you were sent here by Herr Falkstein, weren't you?",
+						"Igor: Yes. My grandfather used to work for your grandfather.",
+						"Dr. Frederick Frankenstein: How nice.",
+						"Igor: Of course the rates have gone up.",
+						"Dr. Frederick Frankenstein: Of course, of course, I'm sure we'll get along splendidly. Oh, I uh, you know I don't mean to embarrass you, but I'm rather a brilliant surgeon. Perhaps I can help you with that hump.",
+						"Igor: What hump?"];
+
+	function annotate () {
+		var time = video.currentTime;
+		var subtitle = document.getElementById("movie_quotes");
+
+		if( time < 24) {
+			subtitle.innerHTML = '';
+		} else if (time < 31) {
+			subtitle.innerHTML = '<p>'+ annotations[0] + '</p>';
+		}else if (time < 35) {
+			subtitle.innerHTML = '<p>'+ annotations[1] + '</p>';
+		}else if (time < 37) {
+			subtitle.innerHTML = '<p>'+ annotations[2] + '</p>';
+		}else if (time < 40) {
+			subtitle.innerHTML = '<p>'+ annotations[3] + '</p>';
+		}else if (time < 42) {
+			subtitle.innerHTML = '<p>'+ annotations[4] + '</p>';
+		}else if (time < 44) {
+			subtitle.innerHTML = '<p>'+ annotations[5] + '</p>';
+		}else if (time < 47) {
+			subtitle.innerHTML = '<p>'+ annotations[6] + '</p>';
+		}else if (time < 50) {
+			subtitle.innerHTML = '<p>'+ annotations[7] + '</p>';
+		}else if (time < 52) {
+			subtitle.innerHTML = '<p>'+ annotations[8] + '</p>';
+		}else if (time < 53) {
+			subtitle.innerHTML = '<p>'+ annotations[9] + '</p>';
+		}else if (time < 57) {
+			subtitle.innerHTML = '<p>'+ annotations[10] + '</p>';
+		}else if (time < 59) {
+			subtitle.innerHTML = '<p>'+ annotations[11] + '</p>';
+		}else if (time < 61) {
+			subtitle.innerHTML = '<p>'+ annotations[12] + '</p>';
+		}else if (time < 64) {
+			subtitle.innerHTML = '<p>'+ annotations[13] + '</p>';
+		}else if (time < 70) {
+			subtitle.innerHTML = '<p>'+ annotations[14] + '</p>';
+		}else if (time < 72) {
+			subtitle.innerHTML = '<p>'+ annotations[15] + '</p>';
+		}else if (time < 74) {
+			subtitle.innerHTML = '<p>'+ annotations[16] + '</p>';
+		}else if (time < 89) {
+			subtitle.innerHTML = '<p>'+ annotations[17] + '</p>';
+		}else {
+			subtitle.innerHTML = '<p>'+ annotations[18] + '</p>';
+		} 
+	}
+
+	function clearAnnotations () {
+		var subtitle = document.getElementById("movie_quotes");
+		subtitle.innerHTML = '';
+	}
+
+	video.addEventListener("timeupdate", annotate); 
+	video.addEventListener("ended", clearAnnotations);
+
+</script>
+</body>
+</html>
+
