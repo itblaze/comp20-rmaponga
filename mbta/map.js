@@ -9,6 +9,14 @@ var ale_to_jfk = [];
 var jfk_to_ash = [];
 var jfk_to_bra = [];
 
+var shortest;
+
+var infoWindow;
+var marker;
+
+var markersList = [];
+var infoWindowList = [];
+
 var stationCoordinates = [
 	{ station: 'South Station', pos:  { lat: 42.352271, lng: -71.05524200000001 }},
 	{ station: 'Andrew'    , pos   :  { lat: 42.330154, lng: -71.057655 }},
@@ -47,17 +55,45 @@ function init () {
 	};
 
 	for(var i = 0; i < stationCoordinates.length; i++) {
+
+		// need to set contents of window for each station
+
 		var marker = new google.maps.Marker({
 			position: stationCoordinates[i].pos,
 			map: map,
-			icon: t_image
+			icon: t_image,
+			title: stationCoordinates[i].station
 		});
+
+		attachListeners(marker);
+		markersList.push({station:stationCoordinates[i].station, marker: marker});
 	}
 	getCurrentLocation();
 	renderRedPolyLine();
 
 }
 
+function attachListeners (marker, content) {
+
+	marker.addListener('click', function() {
+
+		if (infoWindow) {
+			infoWindow.close();
+		}
+
+		if (content == undefined ) {
+			infoWindow = new google.maps.InfoWindow({
+				content: marker.title
+			});
+		} else {
+			infoWindow = new google.maps.InfoWindow({
+				content: content
+			});
+		}
+
+		infoWindow.open(marker.get('map_canvas'), marker);
+	});
+}
 function renderRedPolyLine () {
 	ale_to_jfk.push(findStation("Alewife").pos);
 	ale_to_jfk.push(findStation("Davis").pos);
@@ -130,7 +166,29 @@ function getCurrentLocation () {
 	}
 }
 
+function closestStation () {
+	var closest = stationCoordinates[0];
+
+	var pos = new google.maps.LatLng(stationCoordinates[0].pos.lat, stationCoordinates[0].pos.lng);
+	var shortestDistance = google.maps.geometry.spherical.computeDistanceBetween(self_marker.position, pos);
+
+	for (var i = 0; i < stationCoordinates.length; i++) {
+		//var pos = new google.maps.LatLng(stationCoordinates[i].pos)
+		pos = new google.maps.LatLng(stationCoordinates[i].pos.lat, stationCoordinates[i].pos.lng);
+
+		var distance = google.maps.geometry.spherical.computeDistanceBetween(self_marker.position, pos);
+		if (distance < shortestDistance) {
+			closest = stationCoordinates[i];
+			shortestDistance = distance;
+		}
+	}
+
+	shortest = shortestDistance;
+	return closest;
+}
+
 function renderMap() {
+
 	my_pos = new google.maps.LatLng(myLat, myLng);
 	map.panTo(my_pos);
 
@@ -139,4 +197,25 @@ function renderMap() {
 		map: map,
 		title: 'Current Position'
 	});
+
+
+	var x = closestStation();
+	var y = [];
+	y.push(x.pos);
+	y.push({lat: myLat, lng: myLng});
+
+	var closestTpath = new google.maps.Polyline({
+		path: y,
+		geodesic: true,
+		strokeColor: '#FF0000',
+		strokeWeight: 1
+	});
+	closestTpath.setMap(map);
+
+	shortest = Math.round((shortest/1609.344)*1000)/1000;	// change the value to miles and round to 3 decimal places
+	var content = '<p>The closest station is: ' + x.station + '. It\'s ' + shortest + ' miles away</p>';
+	attachListeners(self_marker, content);
+	// google.maps.event.addListener(self_marker, 'click', function () {
+	// 	info.open(map, self_marker);
+	// });
 }
