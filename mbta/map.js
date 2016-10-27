@@ -12,17 +12,16 @@ var jfk_to_bra = [];
 var shortest;
 
 var infoWindow;
-var marker;
 
 var markersList = [];
-var infoWindowList = [];
+var jsonData;
 
 var stationCoordinates = [
 	{ station: 'South Station', pos:  { lat: 42.352271, lng: -71.05524200000001 }},
 	{ station: 'Andrew'    , pos   :  { lat: 42.330154, lng: -71.057655 }},
 	{ station: 'Porter Square', pos:  { lat:  42.3884 , lng: -71.11914899999999 }},
 	{ station: 'Harvard Square', pos: { lat: 42.373362 ,lng: -71.118956 }},
-	{ station: 'JFK UMass', pos:      { lat: 42.320685 ,lng: -71.052391 }},
+	{ station: 'JFK/UMass', pos:      { lat: 42.320685 ,lng: -71.052391 }},
 	{ station: 'Savin Hill', pos:     { lat: 42.31129 , lng: -71.053331 }},
 	{ station: 'Park Street', pos:    { lat: 42.35639457,lng:-71.0624242 }},
 	{ station: 'Broadway', pos:       { lat: 42.342622 , lng:-71.056967 }},
@@ -30,8 +29,8 @@ var stationCoordinates = [
 	{ station: 'Shawmut', pos:        { lat: 42.29312583,lng: -71.06573796000001 }},
 	{ station: 'Davis', pos:          { lat: 42.39674,   lng: -71.121815 }},
 	{ station: 'Alewife', pos:        { lat: 42.395428,  lng: -71.142483 }},
-	{ station: 'Kendall MIT', pos:    { lat: 42.36249079, lng: -71.08617653 }},
-	{ station: 'Charles MGH', pos:    {   lat: 42.361166 ,    lng: -71.070628 }},
+	{ station: 'Kendall/MIT', pos:    { lat: 42.36249079, lng: -71.08617653 }},
+	{ station: 'Charles/MGH', pos:    {   lat: 42.361166 ,    lng: -71.070628 }},
 	{ station: 'Downtown Crossing', pos:{  lat: 42.355518 ,   lng:   -71.060225 }},
 	{ station: 'Quincy Center', pos:    {  lat: 42.251809 ,   lng:  -71.005409  }},
 	{ station: 'Quincy Adams', pos:      { lat:  42.233391 ,  lng:       -71.007153 }},
@@ -65,34 +64,126 @@ function init () {
 			title: stationCoordinates[i].station
 		});
 
-		attachListeners(marker);
+		attachListeners(marker, "-t");
 		markersList.push({station:stationCoordinates[i].station, marker: marker});
 	}
+	// fetch data from server about the T
+	fetchData();
 	getCurrentLocation();
 	renderRedPolyLine();
 
 }
 
-function attachListeners (marker, content) {
+function fetchData () {
+
+	var data;
+
+	request = new XMLHttpRequest();
+
+	request.open("get", "https://rocky-taiga-26352.herokuapp.com/redline.json", true);
+
+
+	request.onreadystatechange = function () {
+		if (request.readyState == 4 && request.status == 200) {
+			data = request.responseText;
+			jsonData = JSON.parse(data);
+		} else {
+			jsonData = undefined;
+		}
+	}
+
+	request.send();
+}
+
+function attachListeners (marker, type,content) {
 
 	marker.addListener('click', function() {
+
+
 
 		if (infoWindow) {
 			infoWindow.close();
 		}
 
-		if (content == undefined ) {
+		if (type == "-t" ) {
+			var trainData = stationTrainInfo(marker.title);
+
 			infoWindow = new google.maps.InfoWindow({
-				content: marker.title
+				content: trainData
+			});
+		} else if (type == "-s") {
+			infoWindow = new google.maps.InfoWindow({
+				content: content
 			});
 		} else {
 			infoWindow = new google.maps.InfoWindow({
-				content: content
+				content: marker.title
 			});
 		}
 
 		infoWindow.open(marker.get('map_canvas'), marker);
 	});
+}
+
+function stationTrainInfo (name) {
+
+	var towardsAlewife = [];
+	var towardsBraintree = [];
+	var towardsAshmont = [];
+
+	var stationName = '<h3>' + name + '</h3>';
+	var scheduleData = stationName;
+
+
+	if (jsonData == undefined) {
+		return '<p>station data currently unavailable. try refreshing the page</p>';
+	} else {
+		var trips = jsonData.TripList.Trips;
+
+		towardsAlewife = trips.filter(function (value) {
+			if ( value.Destination == "Alewife") {
+				return true;
+			}
+			return false;
+		});
+
+		towardsAshmont = trips.filter(function (value) {
+			return value.Destination == "Ashmont";
+		});
+
+		towardsBraintree = trips.filter(function (value) {
+			return value.Destination == "Braintree";
+		});
+
+		for ( var i = 0 ;i < towardsAshmont.length; i++) {
+			for( var j = 0; j < towardsAshmont[i].Predictions.length; j++) {
+				if (towardsAshmont[i].Predictions[j].Stop == name) {
+					scheduleData = scheduleData + '<p>To Ashmont: ' + Math.round(towardsAshmont[i].Predictions[j].Seconds/60) + ' mins</p>';
+				}
+			}
+		}
+
+		for ( var i = 0 ;i < towardsBraintree.length; i++) {
+			for( var j = 0; j < towardsBraintree[i].Predictions.length; j++) {
+				if (towardsBraintree[i].Predictions[j].Stop == name) {
+					scheduleData = scheduleData + '<p>To Braintree: ' + Math.round(towardsBraintree[i].Predictions[j].Seconds/60) + ' mins</p>';
+				}
+			}
+		}
+
+		for ( var i = 0 ;i < towardsAlewife.length; i++) {
+			for( var j = 0; j < towardsAlewife[i].Predictions.length; j++) {
+				if (towardsAlewife[i].Predictions[j].Stop == name) {
+					scheduleData = scheduleData + '<p>To Alewife: ' + Math.round(towardsAlewife[i].Predictions[j].Seconds/60) + ' mins</p>';
+				}
+			}
+		}
+		if ( scheduleData == stationName) {
+			scheduleData = scheduleData + '<p>No train data</p>';
+		}
+
+		return scheduleData;
+	}
 }
 function renderRedPolyLine () {
 	ale_to_jfk.push(findStation("Alewife").pos);
@@ -100,22 +191,22 @@ function renderRedPolyLine () {
 	ale_to_jfk.push(findStation("Porter Square").pos);
 	ale_to_jfk.push(findStation("Harvard Square").pos);
 	ale_to_jfk.push(findStation("Central Square").pos);
-	ale_to_jfk.push(findStation("Kendall MIT").pos);
-	ale_to_jfk.push(findStation("Charles MGH").pos);
+	ale_to_jfk.push(findStation("Kendall/MIT").pos);
+	ale_to_jfk.push(findStation("Charles/MGH").pos);
 	ale_to_jfk.push(findStation("Park Street").pos);
 	ale_to_jfk.push(findStation("Downtown Crossing").pos);
 	ale_to_jfk.push(findStation("South Station").pos);
 	ale_to_jfk.push(findStation("Broadway").pos);
 	ale_to_jfk.push(findStation("Andrew").pos);
-	ale_to_jfk.push(findStation("JFK UMass").pos);
+	ale_to_jfk.push(findStation("JFK/UMass").pos);
 
-	jfk_to_ash.push(findStation("JFK UMass").pos);
+	jfk_to_ash.push(findStation("JFK/UMass").pos);
 	jfk_to_ash.push(findStation("Savin Hill").pos);
 	jfk_to_ash.push(findStation("Fields Corner").pos);
 	jfk_to_ash.push(findStation("Shawmut").pos);
 	jfk_to_ash.push(findStation("Ashmont").pos);
 
-	jfk_to_bra.push(findStation("JFK UMass").pos);
+	jfk_to_bra.push(findStation("JFK/UMass").pos);
 	jfk_to_bra.push(findStation("North Quincy").pos);
 	jfk_to_bra.push(findStation("Wollaston").pos);
 	jfk_to_bra.push(findStation("Quincy Center").pos);
@@ -214,8 +305,6 @@ function renderMap() {
 
 	shortest = Math.round((shortest/1609.344)*1000)/1000;	// change the value to miles and round to 3 decimal places
 	var content = '<p>The closest station is: ' + x.station + '. It\'s ' + shortest + ' miles away</p>';
-	attachListeners(self_marker, content);
-	// google.maps.event.addListener(self_marker, 'click', function () {
-	// 	info.open(map, self_marker);
-	// });
+	attachListeners(self_marker, "-s",content);
+
 }
