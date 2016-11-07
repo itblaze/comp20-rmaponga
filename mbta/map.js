@@ -80,7 +80,7 @@ function fetchData () {
 
 	request = new XMLHttpRequest();
 
-	request.open("get", "https://rocky-taiga-26352.herokuapp.com/redline.json", true);
+	request.open("get", "https://dry-mesa-37108.herokuapp.com/redline.json", true);
 
 
 	request.onreadystatechange = function () {
