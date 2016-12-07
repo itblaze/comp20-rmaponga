@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Security report on Ryan Kohl web app</title>
+	<script type="text/javascript" src="dos.js"></script>
+	<link 	rel="stylesheet" href="style.css" type="text/css" />
+</head>
+<body>
+	<h1>Introduction</h1>
+	<p>
+		The website I was tasked to with belongs to Ryan Kohl. The task was to analyse and perform security testing to check if the web application had any security issues and to document at least three issues and make recommendations
+	</p>
+	
+	<h1>Methodology</h1>
+	<p>
+		In order to test the web app I relied on a chrome extension called RESTED which allowed me to perform different types of http requests using the browser espicially useful when doing post requests. I focused on examining issues that I thought were major like XSS then moved on to look at the code. I then looked at the code to see if there were any issues I might have missed
+	</p>
+
+	<h1>Abstract of Findings</h1>
+	<p>
+		The web app was prone to attacks by supplying code or scripts wherever input from the client was required. The website did not check and verify that the input that was passed in was valid/
+	</p>
+
+	<h1>Issues Found</h1>
+	<p>
+		<ul>
+			<li>
+				<h4>Poor to no validation/Sanitization of input</h4>
+				<ol>
+					<li>Location: In the POST /submit.json and GET /scores.json </li>
+					<li>Severity of issue: HIGH. This is quite serious as the reason why some of the other issues that arise are as a result of poor validation and no sanitizing input. If the web application is attacked by XSS then having checks and sanitization might dampen the impact of the attack.</li>
+					<li>Description: I found this vulnerability by simply putting in an invalid score and check if the request was then pushed to the database. <img src="./arguments not validated.PNG"> </li>
+					<li>Proof of vulnerability: Even though a score that is not an invalid score was obtained it was still pushed to the database<img src="./arguments not validated - proof.PNG"></li>
+					<li>Resolution: Sanitize the input by removing special characters</li>
+				</ol>
+			</li>
+			<li>
+				<h4>Cross Site Scripting</h4>
+				<ol>
+					<li>Location: In the POST method</li>
+					<li>Severity of issue: HIGH. Attacker could run mailious code when the script is ran</li>
+					<li>Description: Found this bug by posting a script to the username in the POST method and having the browser run the script when the data is displayed by the default route. <img src="xss - post method.PNG" class="images"> </li>
+					<li>Proof of vulnerability: The script is run everytime the default route is executed and the alert box pops up! <img src="xss - script put in as username.PNG" class="images"></li>
+					<li>Resolution: This is solved by proper sanitization of input. If special characters are removed from the input then chances of XSS are significantly reduced. e.g something like: <code>str.replace(/[^a-z0-9áéíóúñü \.,_-]/gim,"");</code></li>
+				</ol>
+			</li>
+			<li>
+				<h4>Database Injection</h4>
+				<ol>
+					<li>Location: In the GET scores method</li>
+					<li>Severity of issue: HIGH. Attacker could gain information that was not intented to be provided</li>
+					<li>Description: Found this bug by explicitly looking at the code, searching for possible mongo injection vulnerabilities. Came across some material on <link rel="stylesheet" type="text/css" href="http://blog.websecurify.com/2014/08/hacking-nodejs-and-mongodb.html"> for possible mongodb injection weaknesses</li>
+					<li>Proof of vulnerability: The method returns all the data except for not the requested username thereby exposing people's username that are in the database when the query string is tampered with. <img src="mongoDb injection.PNG" class="images"></li>
+					<li>Resolution: </li>
+				</ol>
+			</li>
+		</ul>
+	</p>
+	<h1>Conclusion</h1>
+	<p>
+		In closing it is important that all input fields be validated and sanitized. It would reduce the risk of the web app from successful attacks by exploiting well known vulnerabilities of websites. 
+	</p>
+</body>
+</html>
